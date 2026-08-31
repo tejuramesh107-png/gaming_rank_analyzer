@@ -54,3 +54,4 @@ except Exception as e:
         f.write(fallback_summary)
         
     print("✅ Fallback report written successfully!")
+    
