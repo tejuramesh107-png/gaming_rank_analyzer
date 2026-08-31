@@ -1,0 +1,4 @@
+🤖 Executive Analysis (ANOVA Latency Report):
+- Statistical Significance: P-Value (0.0562) > 0.05. Fails to reject H0.
+- Matchmaking Fairness: Ping latency across APAC, LATAM, and EU shows no statistically significant variance.
+- Action Item: Server routing is balanced; focus engineering efforts on individual ISP outlier spikes.
