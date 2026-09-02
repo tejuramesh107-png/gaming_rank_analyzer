@@ -16,7 +16,6 @@ def load_data():
     if os.path.exists("gaming_data.db"):
         try:
             conn = sqlite3.connect("gaming_data.db")
-            # Pull joined data if available or sessions table
             df = pd.read_sql_query("SELECT * FROM raw_sessions", conn)
             conn.close()
             return df
