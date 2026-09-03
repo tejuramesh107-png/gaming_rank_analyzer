@@ -1,7 +1,6 @@
 # 🎮 Gaming Rank & Latency Analyzer
 
-An end-to-end data analysis pipeline evaluating server ping latency, player performance, and match outcome distributions across regional gaming clusters.
-
+Check out the interactive dashboard here: [Live App](https://searchqtejuramesh107-png2fgamingrankanalyzertyperepositories-m.streamlit.app)
 ## 📌 Project Overview
 - **Data Wrangling:** Cleaned raw player, match, and session datasets into a relational SQLite database (`gaming_data.db`).
 - **Visual Explorations:** Evaluated ping distributions and win/loss/forfeit rates per region.
@@ -33,8 +32,8 @@ An end-to-end data analysis pipeline evaluating server ping latency, player perf
 
 ```bash
 # Clone the repository
-git clone [https://github.com/tejuramesh107-png/gaming_rank_analyzer.git](https://github.com/tejuramesh107-png/gaming_rank_analyzer.git)
+git clone
 cd gaming_rank_analyzer
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -r requirements.txt 
