@@ -9,12 +9,11 @@ st.set_page_config(page_title="Gaming Rank & Latency Analyzer", layout="wide")
 st.title("🎮 Gaming Rank & Latency Analyzer")
 st.markdown("Analyze server latency impact on player telemetry and match outcomes.")
 
-# Database Connection
+# Database Connection (Guarded against caching errors)
 @st.cache_data
 def load_data():
     conn = sqlite3.connect("gaming_data.db")
     
-    # Query sessions merged with players
     sessions_df = pd.read_sql_query("""
         SELECT 
             s.session_id,
@@ -27,11 +26,9 @@ def load_data():
         LEFT JOIN players p ON s.player_id = p.player_id;
     """, conn)
     
-    # Fetch matches table
     matches_df = pd.read_sql_query("SELECT * FROM matches;", conn)
     conn.close()
     
-    # Safely attach match outcomes
     outcome_col = "match_outcome" if "match_outcome" in matches_df.columns else "outcome"
     sessions_df["match_outcome"] = matches_df[outcome_col].reindex(sessions_df.index).values
     
@@ -94,7 +91,6 @@ with col1:
     st.subheader("📶 Ping Latency Distribution")
     if not filtered_df.empty:
         fig, ax = plt.subplots(figsize=(6, 4))
-        # 30 bins prevents solid block artifacts
         sns.histplot(
             data=filtered_df, 
             x="ping_ms", 
@@ -107,29 +103,45 @@ with col1:
         ax.set_ylabel("Session Count")
         st.pyplot(fig)
     else:
-        st.warning("No data available for selected filters.")
+        st.warning("⚠️ No session telemetry data found for the selected ping/region filter.")
 
 with col2:
     st.subheader("🏆 Match Outcome Breakdown")
     if not filtered_df.empty and "match_outcome" in filtered_df.columns:
         outcome_counts = filtered_df["match_outcome"].value_counts()
-        fig2, ax2 = plt.subplots(figsize=(5, 5))
-        ax2.pie(
-            outcome_counts, 
-            labels=outcome_counts.index, 
-            autopct="%1.1f%%", 
-            colors=["#55efc4", "#ff7675", "#ffeaa7"],
-            startangle=140
-        )
-        st.pyplot(fig2)
+        if not outcome_counts.empty:
+            fig2, ax2 = plt.subplots(figsize=(5, 5))
+            ax2.pie(
+                outcome_counts, 
+                labels=outcome_counts.index, 
+                autopct="%1.1f%%", 
+                colors=["#55efc4", "#ff7675", "#ffeaa7"],
+                startangle=140
+            )
+            st.pyplot(fig2)
+        else:
+            st.warning("⚠️ No match outcomes found in this range.")
     else:
-        st.warning("No outcome data available.")
+        st.warning("⚠️ No outcome data available for selected range.")
 
 # --- 3. EXECUTIVE AI SUMMARY ---
 st.markdown("---")
 st.subheader("🤖 Generative AI Executive Summary")
-st.info(
-    f"**Telemetry Summary:** Across the **{len(selected_regions)}** selected regions, the current average latency is **{avg_ping} ms** "
-    f"with a **{dc_rate}%** disconnect rate. Regions experiencing frequent spikes above 150 ms represent key targets for network optimization."
-)
+if not filtered_df.empty:
+    st.info(
+        f"**Telemetry Summary:** Across the **{len(selected_regions)}** selected regions, the current average latency is **{avg_ping} ms** "
+        f"with a **{dc_rate}%** disconnect rate. Sessions exceeding 150 ms lag represent high-risk spikes for user retention."
+    )
+else:
+    st.info("Adjust filters in the sidebar to generate telemetry summary insights.")
 
+# --- 4. PLAYER TELEMETRY DATA TABLE ---
+st.markdown("---")
+st.subheader("📋 Raw Player Telemetry Explorer")
+if not filtered_df.empty:
+    st.dataframe(
+        filtered_df[["session_id", "player_id", "username", "region", "ping_ms", "disconnected", "match_outcome"]],
+        use_container_width=True
+    )
+else:
+    st.write("No telemetry records to display for these filter criteria.")
