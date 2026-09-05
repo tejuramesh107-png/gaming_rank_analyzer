@@ -9,7 +9,7 @@ st.set_page_config(page_title="Gaming Rank & Latency Analyzer", layout="wide")
 st.title("🎮 Gaming Rank & Latency Analyzer")
 st.markdown("Analyze server latency impact on player telemetry and match outcomes.")
 
-# Database Connection (Guarded against caching errors)
+# Database Connection
 @st.cache_data
 def load_data():
     conn = sqlite3.connect("gaming_data.db")
@@ -30,7 +30,15 @@ def load_data():
     conn.close()
     
     outcome_col = "match_outcome" if "match_outcome" in matches_df.columns else "outcome"
-    sessions_df["match_outcome"] = matches_df[outcome_col].reindex(sessions_df.index).values
+    
+    # Merge matches on player_id if available, otherwise map index-wise and fill missing
+    if "player_id" in matches_df.columns:
+        sessions_df = sessions_df.merge(matches_df[["player_id", outcome_col]], on="player_id", how="left")
+    else:
+        sessions_df["match_outcome"] = matches_df[outcome_col].reindex(sessions_df.index).values
+
+    # Clean up NaN outcomes so pie chart always renders
+    sessions_df["match_outcome"] = sessions_df["match_outcome"].fillna("Unknown")
     
     return sessions_df
 
@@ -94,7 +102,7 @@ with col1:
         sns.histplot(
             data=filtered_df, 
             x="ping_ms", 
-            bins=30, 
+            bins=25, 
             kde=True, 
             ax=ax, 
             color="#6c5ce7"
@@ -103,11 +111,11 @@ with col1:
         ax.set_ylabel("Session Count")
         st.pyplot(fig)
     else:
-        st.warning("⚠️ No session telemetry data found for the selected ping/region filter.")
+        st.warning("⚠️ No session telemetry data found for selected filter.")
 
 with col2:
     st.subheader("🏆 Match Outcome Breakdown")
-    if not filtered_df.empty and "match_outcome" in filtered_df.columns:
+    if not filtered_df.empty:
         outcome_counts = filtered_df["match_outcome"].value_counts()
         if not outcome_counts.empty:
             fig2, ax2 = plt.subplots(figsize=(5, 5))
@@ -115,7 +123,7 @@ with col2:
                 outcome_counts, 
                 labels=outcome_counts.index, 
                 autopct="%1.1f%%", 
-                colors=["#55efc4", "#ff7675", "#ffeaa7"],
+                colors=["#55efc4", "#ff7675", "#ffeaa7", "#b2bec3"],
                 startangle=140
             )
             st.pyplot(fig2)
