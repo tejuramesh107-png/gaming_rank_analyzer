@@ -4,50 +4,57 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# --- 1. PAGE CONFIG & CREATIVE ESPORTS CSS ---
+# --- 1. PAGE CONFIG & HIGH-CONTRAST ESPORTS CSS ---
 st.set_page_config(
     page_title="Esports Latency Analyzer",
     layout="wide",
     page_icon="🎮"
 )
 
-# Custom High-End Esports UI Styling
+# Enforce Crisp Contrast and Esports Neon Accents
 st.markdown("""
     <style>
-    /* Dark Cyber Esports Background with Grid Overlay */
+    /* Esports Background Overlay */
     .stApp {
         background-color: #0b0d19;
         background-image: 
-            radial-gradient(circle at 15% 15%, rgba(124, 58, 237, 0.15) 0%, transparent 40%),
-            radial-gradient(circle at 85% 85%, rgba(0, 242, 254, 0.12) 0%, transparent 40%),
-            linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-        background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
-        color: #f1f5f9;
+            radial-gradient(circle at 15% 15%, rgba(124, 58, 237, 0.2) 0%, transparent 40%),
+            radial-gradient(circle at 85% 85%, rgba(0, 242, 254, 0.15) 0%, transparent 40%);
+        color: #ffffff !important;
     }
     
-    /* Sidebar Styling */
+    /* FIX SIDEBAR BLURRY/DARK TEXT */
     [data-testid="stSidebar"] {
-        background-color: #06070e !important;
+        background-color: #060712 !important;
         border-right: 1px solid #1e1b4b;
     }
+    [data-testid="stSidebar"] *, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span, [data-testid="stSidebar"] p {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+        opacity: 1 !important;
+    }
     
-    /* Dropdown and Input Box Styling */
+    /* FIX SIDEBAR BUTTON & DROPDOWN BOXES */
+    [data-testid="stSidebar"] .stButton > button {
+        background: linear-gradient(90deg, #6366f1 0%, #00f2fe 100%) !important;
+        color: #000000 !important;
+        font-weight: 800 !important;
+        border: none !important;
+        border-radius: 8px !important;
+    }
+
     div[data-baseweb="select"] > div {
-        background-color: #121528 !important;
+        background-color: #1a1d36 !important;
         color: #ffffff !important;
         border: 1px solid #6366f1 !important;
         border-radius: 8px !important;
     }
-    div[data-baseweb="select"] * {
-        color: #ffffff !important;
-    }
 
-    /* Neon Metric Cards */
+    /* NEON METRIC CARDS */
     div[data-testid="stMetric"] {
-        background: rgba(18, 21, 40, 0.85);
+        background: rgba(18, 21, 40, 0.9);
         border: 1px solid #6366f1;
-        box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
         border-radius: 12px;
         padding: 15px;
     }
@@ -62,7 +69,7 @@ st.markdown("""
         text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
     }
 
-    /* Custom Esports Dark Table Styling */
+    /* CUSTOM DARK TELEMETRY TABLE */
     .esports-table-container {
         background-color: #121528;
         border: 1px solid #312e81;
@@ -174,7 +181,7 @@ Analyze gaming telemetry data to understand how server region and network latenc
 st.markdown("---")
 
 # --- 5. SIDEBAR FILTERS ---
-st.sidebar.header("🕹️ Telemetry Controls")
+st.sidebar.markdown("## 🕹️ Telemetry Controls")
 
 if st.sidebar.button("ℹ️ App & Network Guide", use_container_width=True):
     show_guide_modal()
@@ -278,7 +285,6 @@ if not filtered_df.empty:
 st.markdown("---")
 st.subheader("📋 Session Telemetry Explorer")
 if not filtered_df.empty:
-    # Display table as styled HTML to guarantee dark theme integration
     table_df = filtered_df[["session_id", "player_id", "username", "region", "ping_ms", "disconnected", "match_outcome"]].head(100)
     html_table = table_df.to_html(classes="esports-table", index=False)
     

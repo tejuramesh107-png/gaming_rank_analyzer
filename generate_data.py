@@ -6,11 +6,11 @@ fake = Faker()
 np.random.seed(42)
 
 # 1. Generate Players Data
-n_players = 100
+n_players = 200
 players_data = {
     "player_id": [f"P_{1000+i}" for i in range(n_players)],
     "username": [fake.user_name() for _ in range(n_players)],
-    "region": np.random.choice(["APAC", "LATAM", "EU", "NA", "SA"], size=n_players),
+    "region": np.random.choice(["APAC", "LATAM", "EU", "NA", "SA", "ME", "OCE"], size=n_players),
     "join_date": [fake.date_between(start_date="-1y", end_date="today") for _ in range(n_players)]
 }
 df_players = pd.DataFrame(players_data)
@@ -20,8 +20,8 @@ df_players.to_csv("raw_players.csv", index=False)
 n_matches = 500
 matches_data = {
     "match_id": [f"M_{5000+i}" for i in range(n_matches)],
-    "region": np.random.choice(["APAC", "LATAM", "EU", "NA", "SA"], size=n_matches),
-    "match_outcome": np.random.choice(["Win", "Loss", "Forfeit", None], size=n_matches, p=[0.45, 0.45, 0.08, 0.02])
+    "region": np.random.choice(["APAC", "LATAM", "EU", "NA", "SA", "ME", "OCE"], size=n_matches),
+    "match_outcome": np.random.choice(["Win", "Loss", "Forfeit"], size=n_matches, p=[0.45, 0.45, 0.10])
 }
 df_matches = pd.DataFrame(matches_data)
 df_matches.to_csv("raw_matches.csv", index=False)
@@ -29,10 +29,10 @@ df_matches.to_csv("raw_matches.csv", index=False)
 # 3. Generate Sessions Data
 n_sessions = 1000
 pings = np.concatenate([
-    np.random.normal(loc=40, scale=15, size=950),
-    np.random.uniform(low=200, high=1000, size=50)
+    np.random.normal(loc=45, scale=15, size=920),
+    np.random.uniform(low=150, high=600, size=80)
 ])
-pings = np.clip(pings, a_min=10, a_max=1000)
+pings = np.clip(pings, a_min=10, a_max=600)
 
 sessions_data = {
     "session_id": [f"S_{9000+i}" for i in range(n_sessions)],
@@ -43,4 +43,4 @@ sessions_data = {
 df_sessions = pd.DataFrame(sessions_data)
 df_sessions.to_csv("raw_sessions.csv", index=False)
 
-print("Data successfully generated with NA and SA regions added!")
+print("Data generation complete! Regions included: APAC, LATAM, EU, NA, SA, ME, OCE.")
