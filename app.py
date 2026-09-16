@@ -4,64 +4,95 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# --- 1. PAGE CONFIG & ESPORTS GAMING THEME CSS ---
+# --- 1. PAGE CONFIG & CREATIVE ESPORTS CSS ---
 st.set_page_config(
-    page_title="Gaming Rank & Server Latency Analyzer",
+    page_title="Esports Latency Analyzer",
     layout="wide",
     page_icon="🎮"
 )
 
-# Creative Esports Dark Theme CSS (Neon Purple / Cyan Accents + High Contrast Text)
+# Custom High-End Esports UI Styling
 st.markdown("""
     <style>
-    /* Esports Gradient App Background */
+    /* Dark Cyber Esports Background with Grid Overlay */
     .stApp {
-        background: linear-gradient(135deg, #0f0c20 0%, #15102a 50%, #060913 100%);
-        color: #ffffff;
+        background-color: #0b0d19;
+        background-image: 
+            radial-gradient(circle at 15% 15%, rgba(124, 58, 237, 0.15) 0%, transparent 40%),
+            radial-gradient(circle at 85% 85%, rgba(0, 242, 254, 0.12) 0%, transparent 40%),
+            linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+        color: #f1f5f9;
     }
     
     /* Sidebar Styling */
     [data-testid="stSidebar"] {
-        background-color: #0b0818 !important;
-        border-right: 1px solid #2d1f47;
+        background-color: #06070e !important;
+        border-right: 1px solid #1e1b4b;
     }
-    [data-testid="stSidebar"] * {
-        color: #e2e8f0 !important;
+    
+    /* Dropdown and Input Box Styling */
+    div[data-baseweb="select"] > div {
+        background-color: #121528 !important;
+        color: #ffffff !important;
+        border: 1px solid #6366f1 !important;
+        border-radius: 8px !important;
+    }
+    div[data-baseweb="select"] * {
+        color: #ffffff !important;
     }
 
-    /* Fixed KPI Metric Cards: Bright High-Contrast Text */
+    /* Neon Metric Cards */
     div[data-testid="stMetric"] {
-        background: rgba(23, 15, 48, 0.85);
-        border: 1px solid #7c3aed;
-        box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+        background: rgba(18, 21, 40, 0.85);
+        border: 1px solid #6366f1;
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
         border-radius: 12px;
         padding: 15px;
     }
     div[data-testid="stMetricLabel"] p {
-        color: #a7f3d0 !important; /* Bright Mint Green Label */
-        font-weight: 600 !important;
-        font-size: 0.95rem !important;
+        color: #a5b4fc !important;
+        font-weight: 700 !important;
     }
     div[data-testid="stMetricValue"] div {
-        color: #00f2fe !important; /* Bright Electric Cyan Numbers */
-        font-weight: 800 !important;
-        font-size: 1.8rem !important;
+        color: #00f2fe !important;
+        font-weight: 900 !important;
+        font-size: 2rem !important;
+        text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
     }
 
-    /* Styled Telemetry Data Table to match Esports Dark Theme */
-    [data-testid="stDataFrame"] {
-        background-color: #120e24 !important;
+    /* Custom Esports Dark Table Styling */
+    .esports-table-container {
+        background-color: #121528;
+        border: 1px solid #312e81;
         border-radius: 10px;
-        border: 1px solid #3b0764;
+        padding: 10px;
+        overflow-x: auto;
     }
-
-    /* Primary Accent Buttons */
-    .stButton > button {
-        background: linear-gradient(90deg, #7c3aed 0%, #00f2fe 100%) !important;
-        color: #ffffff !important;
-        font-weight: bold !important;
-        border: none !important;
-        border-radius: 8px !important;
+    .esports-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #e2e8f0;
+        font-family: sans-serif;
+        font-size: 0.9rem;
+    }
+    .esports-table th {
+        background-color: #1e1b4b;
+        color: #00f2fe;
+        text-align: left;
+        padding: 12px;
+        border-bottom: 2px solid #6366f1;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+    .esports-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #1e293b;
+    }
+    .esports-table tr:hover {
+        background-color: #1e1b4b;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -81,12 +112,12 @@ def show_guide_modal():
     
     ---
     ### 💡 How to Use
-    * Use the **Sidebar Filters** to select server regions or ping limits. Charts update automatically!
+    * Use the **Sidebar Filters** to select server regions or ping limits.
     """)
     if st.button("Close Guide", type="primary"):
         st.rerun()
 
-# --- 3. DATABASE LOADING & CLEANUP ---
+# --- 3. DATA LOADING & CLEANING ---
 @st.cache_data
 def load_data():
     conn = sqlite3.connect("gaming_data.db")
@@ -115,7 +146,7 @@ def load_data():
     else:
         sessions_df["match_outcome"] = matches_df[outcome_col].reindex(sessions_df.index).values
 
-    # Clean missing outcomes so "Unknown" never appears in pie chart
+    # Clean out unknown outcome entries
     sessions_df["match_outcome"] = sessions_df[outcome_col]
     sessions_df = sessions_df.dropna(subset=["match_outcome"])
     sessions_df = sessions_df[~sessions_df["match_outcome"].isin(["Unknown", "none", ""])]
@@ -128,34 +159,33 @@ except Exception as e:
     st.error(f"Error loading database: {e}")
     st.stop()
 
-# --- 4. HEADER SECTION ---
-st.title("🎮 Esports Network Telemetry Dashboard")
-st.caption("📍 Benchmark Context: Tactical FPS Infrastructure (Valorant / CS2 Regional Telemetry)")
+# --- 4. HEADER ---
+st.title("⚡ Gaming Rank & Server Latency Analyzer")
+st.caption("🎮 **Domain Benchmark:** Esports Tactical FPS Servers (Valorant / CS2 Telemetry)")
 
 st.markdown("""
 ### 🎯 Project Objective
-Analyze gaming telemetry data to understand how server region and network latency affect connectivity, match outcomes, and competitive performance.
+Analyze gaming telemetry data to understand how server region and network latency affect player connectivity, match outcomes, and competitive performance.
 
 > **❓ Main Analytical Question:**  
-> *How do server region and network latency influence connectivity, match outcomes, and competitive performance?*
+> *How do server region and network latency influence player connectivity, match outcomes, and competitive performance?*
 """)
 
 st.markdown("---")
 
 # --- 5. SIDEBAR FILTERS ---
-st.sidebar.header("⚡ Control Panel")
+st.sidebar.header("🕹️ Telemetry Controls")
 
 if st.sidebar.button("ℹ️ App & Network Guide", use_container_width=True):
     show_guide_modal()
 
 st.sidebar.markdown("---")
 
-# Server Region Dropdown
 all_regions = sorted(df["region"].dropna().unique().tolist())
 region_option = st.sidebar.selectbox(
     "Select Server Region",
     options=["All Regions"] + all_regions,
-    help="Filter data by specific global server location."
+    help="Filter data by server cluster."
 )
 
 if region_option == "All Regions":
@@ -163,25 +193,22 @@ if region_option == "All Regions":
 else:
     selected_regions = [region_option]
 
-# Latency Range Slider
 min_ping, max_ping = int(df["ping_ms"].min()), int(df["ping_ms"].max())
 ping_range = st.sidebar.slider(
     "Filter by Ping Range (ms)",
     min_value=min_ping,
     max_value=max_ping,
-    value=(min_ping, max_ping),
-    help="Drag sliders to isolate smooth gameplay (<50ms) vs severe lag."
+    value=(min_ping, max_ping)
 )
 
-# Apply Filter
 filtered_df = df[
     (df["region"].isin(selected_regions)) &
     (df["ping_ms"] >= ping_range[0]) &
     (df["ping_ms"] <= ping_range[1])
 ]
 
-# --- 6. HIGH-CONTRAST METRIC CARDS ---
-st.subheader("📈 Connectivity Metrics")
+# --- 6. KPI METRIC CARDS ---
+st.subheader("📈 Real-Time Connectivity Metrics")
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 
 total_sessions = len(filtered_df)
@@ -196,32 +223,32 @@ kpi4.metric("Lag Spikes (>150ms)", f"{high_lag_spikes}")
 
 st.markdown("---")
 
-# --- 7. CHARTS & VISUALIZATIONS ---
+# --- 7. CHARTS ---
 col1, col2 = st.columns(2)
 
 plt.style.use("dark_background")
 
 with col1:
-    st.subheader("📶 Latency Distribution")
+    st.subheader("📶 Server Ping Distribution")
     if not filtered_df.empty:
         fig, ax = plt.subplots(figsize=(6, 4))
-        fig.patch.set_facecolor('#0f0c20')
-        ax.set_facecolor('#15102a')
+        fig.patch.set_facecolor('#0b0d19')
+        ax.set_facecolor('#121528')
         sns.histplot(data=filtered_df, x="ping_ms", bins=25, kde=True, ax=ax, color="#00f2fe")
-        ax.set_xlabel("Ping Latency (ms)", color="#e2e8f0")
-        ax.set_ylabel("Active Sessions", color="#e2e8f0")
+        ax.set_xlabel("Ping Latency (ms)", color="#a5b4fc")
+        ax.set_ylabel("Active Sessions", color="#a5b4fc")
         st.pyplot(fig)
     else:
-        st.warning("⚠️ No records match current filter settings.")
+        st.warning("⚠️ No matching records found.")
 
 with col2:
-    st.subheader("🏆 Match Outcome Ratio")
+    st.subheader("🏆 Match Outcome Breakdown")
     if not filtered_df.empty:
         outcome_counts = filtered_df["match_outcome"].value_counts()
         
         if not outcome_counts.empty:
             fig2, ax2 = plt.subplots(figsize=(5, 5))
-            fig2.patch.set_facecolor('#0f0c20')
+            fig2.patch.set_facecolor('#0b0d19')
             colors = ["#00f2fe", "#ff4757", "#ffa502", "#2ed573"]
             
             ax2.pie(
@@ -235,23 +262,24 @@ with col2:
             )
             st.pyplot(fig2)
         else:
-            st.warning("⚠️ No valid outcomes found.")
+            st.warning("⚠️ No outcome data available.")
     else:
         st.warning("⚠️ No outcome data available.")
 
-# --- 8. EXECUTIVE SUMMARY & TELEMETRY EXPLORER ---
+# --- 8. EXECUTIVE SUMMARY & DARK TABLE ---
 st.markdown("---")
 st.subheader("🤖 Analytical Insights Summary")
 if not filtered_df.empty:
     st.info(
         f"**Findings:** Across **{len(selected_regions)}** server regions, players average **{avg_ping} ms** connection latency "
-        f"with a **{dc_rate}% disconnect rate**. A total of **{high_lag_spikes} sessions** suffer from severe lag spikes exceeding 150 ms."
+        f"with a **{dc_rate}% disconnect rate**. A total of **{high_lag_spikes} sessions** suffer from lag spikes exceeding 150 ms."
     )
 
 st.markdown("---")
 st.subheader("📋 Session Telemetry Explorer")
 if not filtered_df.empty:
-    st.dataframe(
-        filtered_df[["session_id", "player_id", "username", "region", "ping_ms", "disconnected", "match_outcome"]],
-        use_container_width=True
-    )
+    # Display table as styled HTML to guarantee dark theme integration
+    table_df = filtered_df[["session_id", "player_id", "username", "region", "ping_ms", "disconnected", "match_outcome"]].head(100)
+    html_table = table_df.to_html(classes="esports-table", index=False)
+    
+    st.markdown(f'<div class="esports-table-container">{html_table}</div>', unsafe_allow_html=True)
