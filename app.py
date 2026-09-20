@@ -1,8 +1,12 @@
 import streamlit as st
 import sqlite3
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import time
+import requests
+from sklearn.linear_model import LogisticRegression
 
 # --- 1. PAGE CONFIG & HIGH-CONTRAST ESPORTS CSS ---
 st.set_page_config(
@@ -11,10 +15,8 @@ st.set_page_config(
     page_icon="🎮"
 )
 
-# Enforce Crisp Contrast and Esports Neon Accents
 st.markdown("""
     <style>
-    /* Esports Background Overlay */
     .stApp {
         background-color: #0b0d19;
         background-image: 
@@ -23,7 +25,6 @@ st.markdown("""
         color: #ffffff !important;
     }
     
-    /* FIX SIDEBAR BLURRY/DARK TEXT */
     [data-testid="stSidebar"] {
         background-color: #060712 !important;
         border-right: 1px solid #1e1b4b;
@@ -34,7 +35,6 @@ st.markdown("""
         opacity: 1 !important;
     }
     
-    /* FIX SIDEBAR BUTTON & DROPDOWN BOXES */
     [data-testid="stSidebar"] .stButton > button {
         background: linear-gradient(90deg, #6366f1 0%, #00f2fe 100%) !important;
         color: #000000 !important;
@@ -50,7 +50,6 @@ st.markdown("""
         border-radius: 8px !important;
     }
 
-    /* NEON METRIC CARDS */
     div[data-testid="stMetric"] {
         background: rgba(18, 21, 40, 0.9);
         border: 1px solid #6366f1;
@@ -69,7 +68,6 @@ st.markdown("""
         text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
     }
 
-    /* CUSTOM DARK TELEMETRY TABLE */
     .esports-table-container {
         background-color: #121528;
         border: 1px solid #312e81;
@@ -119,14 +117,15 @@ def show_guide_modal():
     
     ---
     ### 💡 How to Use
-    * Use the **Sidebar Filters** to select server regions or ping limits.
+    * Use the **Sidebar Filters** or **Upload CSV** to load custom network data.
+    * Use the **Live Ping Tester** or **Match Predictor** to simulate network health.
     """)
     if st.button("Close Guide", type="primary"):
         st.rerun()
 
 # --- 3. DATA LOADING & CLEANING ---
 @st.cache_data
-def load_data():
+def load_default_data():
     conn = sqlite3.connect("gaming_data.db")
     
     sessions_df = pd.read_sql_query("""
@@ -153,42 +152,49 @@ def load_data():
     else:
         sessions_df["match_outcome"] = matches_df[outcome_col].reindex(sessions_df.index).values
 
-    # Clean out unknown outcome entries
     sessions_df["match_outcome"] = sessions_df[outcome_col]
     sessions_df = sessions_df.dropna(subset=["match_outcome"])
     sessions_df = sessions_df[~sessions_df["match_outcome"].isin(["Unknown", "none", ""])]
     
     return sessions_df
 
-try:
-    df = load_data()
-except Exception as e:
-    st.error(f"Error loading database: {e}")
-    st.stop()
-
-# --- 4. HEADER ---
-st.title("⚡ Gaming Rank & Server Latency Analyzer")
-st.caption("🎮 **Domain Benchmark:** Esports Tactical FPS Servers (Valorant / CS2 Telemetry)")
-
-st.markdown("""
-### 🎯 Project Objective
-Analyze gaming telemetry data to understand how server region and network latency affect player connectivity, match outcomes, and competitive performance.
-
-> **❓ Main Analytical Question:**  
-> *How do server region and network latency influence player connectivity, match outcomes, and competitive performance?*
-""")
-
-st.markdown("---")
-
-# --- 5. SIDEBAR FILTERS ---
+# --- 4. FEATURE 1: FILE UPLOADER ---
 st.sidebar.markdown("## 🕹️ Telemetry Controls")
 
 if st.sidebar.button("ℹ️ App & Network Guide", use_container_width=True):
     show_guide_modal()
 
 st.sidebar.markdown("---")
+st.sidebar.markdown("### 📁 Data Source")
+uploaded_file = st.sidebar.file_uploader("Upload Telemetry CSV", type=["csv"])
 
-all_regions = sorted(df["region"].dropna().unique().tolist())
+if uploaded_file is not None:
+    try:
+        df = pd.read_csv(uploaded_file)
+        st.sidebar.success("Custom CSV Loaded Successfully!")
+    except Exception as e:
+        st.sidebar.error(f"Error loading CSV: {e}")
+        df = load_default_data()
+else:
+    try:
+        df = load_default_data()
+    except Exception as e:
+        st.error(f"Error loading database: {e}")
+        st.stop()
+
+# --- 5. HEADER ---
+st.title("⚡ Gaming Rank & Server Latency Analyzer")
+st.caption("🎮 **Domain Benchmark:** Esports Tactical FPS Servers (Valorant / CS2 Telemetry)")
+
+st.markdown("""
+### 🎯 Project Objective
+Analyze gaming telemetry data to understand how server region and network latency affect player connectivity, match outcomes, and competitive performance.
+""")
+
+st.markdown("---")
+
+# --- 6. SIDEBAR FILTERS ---
+all_regions = sorted(df["region"].dropna().unique().tolist()) if "region" in df.columns else ["N/A"]
 region_option = st.sidebar.selectbox(
     "Select Server Region",
     options=["All Regions"] + all_regions,
@@ -200,7 +206,7 @@ if region_option == "All Regions":
 else:
     selected_regions = [region_option]
 
-min_ping, max_ping = int(df["ping_ms"].min()), int(df["ping_ms"].max())
+min_ping, max_ping = int(df["ping_ms"].min()), int(df["ping_ms"].max()) if "ping_ms" in df.columns else (0, 100)
 ping_range = st.sidebar.slider(
     "Filter by Ping Range (ms)",
     min_value=min_ping,
@@ -212,16 +218,16 @@ filtered_df = df[
     (df["region"].isin(selected_regions)) &
     (df["ping_ms"] >= ping_range[0]) &
     (df["ping_ms"] <= ping_range[1])
-]
+] if "region" in df.columns and "ping_ms" in df.columns else df
 
-# --- 6. KPI METRIC CARDS ---
+# --- 7. KPI METRIC CARDS ---
 st.subheader("📈 Real-Time Connectivity Metrics")
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 
 total_sessions = len(filtered_df)
-avg_ping = round(filtered_df["ping_ms"].mean(), 1) if total_sessions > 0 else 0
-dc_rate = round((filtered_df["disconnected"].sum() / total_sessions * 100), 1) if total_sessions > 0 else 0
-high_lag_spikes = len(filtered_df[filtered_df["ping_ms"] > 150])
+avg_ping = round(filtered_df["ping_ms"].mean(), 1) if total_sessions > 0 and "ping_ms" in filtered_df.columns else 0
+dc_rate = round((filtered_df["disconnected"].sum() / total_sessions * 100), 1) if total_sessions > 0 and "disconnected" in filtered_df.columns else 0
+high_lag_spikes = len(filtered_df[filtered_df["ping_ms"] > 150]) if "ping_ms" in filtered_df.columns else 0
 
 kpi1.metric("Average Ping", f"{avg_ping} ms")
 kpi2.metric("Total Active Sessions", f"{total_sessions:,}")
@@ -230,14 +236,13 @@ kpi4.metric("Lag Spikes (>150ms)", f"{high_lag_spikes}")
 
 st.markdown("---")
 
-# --- 7. CHARTS ---
+# --- 8. CHARTS ---
 col1, col2 = st.columns(2)
-
 plt.style.use("dark_background")
 
 with col1:
     st.subheader("📶 Server Ping Distribution")
-    if not filtered_df.empty:
+    if not filtered_df.empty and "ping_ms" in filtered_df.columns:
         fig, ax = plt.subplots(figsize=(6, 4))
         fig.patch.set_facecolor('#0b0d19')
         ax.set_facecolor('#121528')
@@ -250,14 +255,12 @@ with col1:
 
 with col2:
     st.subheader("🏆 Match Outcome Breakdown")
-    if not filtered_df.empty:
+    if not filtered_df.empty and "match_outcome" in filtered_df.columns:
         outcome_counts = filtered_df["match_outcome"].value_counts()
-        
         if not outcome_counts.empty:
             fig2, ax2 = plt.subplots(figsize=(5, 5))
             fig2.patch.set_facecolor('#0b0d19')
             colors = ["#00f2fe", "#ff4757", "#ffa502", "#2ed573"]
-            
             ax2.pie(
                 outcome_counts, 
                 labels=outcome_counts.index, 
@@ -273,19 +276,102 @@ with col2:
     else:
         st.warning("⚠️ No outcome data available.")
 
-# --- 8. EXECUTIVE SUMMARY & DARK TABLE ---
 st.markdown("---")
-st.subheader("🤖 Analytical Insights Summary")
-if not filtered_df.empty:
-    st.info(
-        f"**Findings:** Across **{len(selected_regions)}** server regions, players average **{avg_ping} ms** connection latency "
-        f"with a **{dc_rate}% disconnect rate**. A total of **{high_lag_spikes} sessions** suffer from lag spikes exceeding 150 ms."
+
+# --- 9. FEATURE 2: INTERACTIVE PING TEST SIMULATOR ---
+st.subheader("⚡ Live Regional Ping Test Simulator")
+st.caption("Measure live HTTP round-trip latency to global public endpoints.")
+
+sim_col1, sim_col2 = st.columns([1, 2])
+
+with sim_col1:
+    target_region = st.selectbox(
+        "Select Server Endpoint",
+        ["NA (North America)", "EU (Europe)", "APAC (Asia-Pacific)"]
     )
+    run_ping = st.button("🚀 Run Live Ping Test", use_container_width=True)
+
+with sim_col2:
+    if run_ping:
+        endpoint_urls = {
+            "NA (North America)": "https://1.1.1.1",
+            "EU (Europe)": "https://8.8.8.8",
+            "APAC (Asia-Pacific)": "https://1.0.0.1"
+        }
+        target_url = endpoint_urls[target_region]
+        
+        with st.spinner("Pinging server cluster..."):
+            try:
+                start_time = time.time()
+                response = requests.get(target_url, timeout=3)
+                latency = round((time.time() - start_time) * 1000, 1)
+                
+                if latency < 50:
+                    st.success(f"🟢 **{target_region} Ping:** {latency} ms — **Tournament Ready** (Optimal connection)")
+                elif latency <= 100:
+                    st.warning(f"🟡 **{target_region} Ping:** {latency} ms — **Playable** (Minor latency detected)")
+                else:
+                    st.error(f"🔴 **{target_region} Ping:** {latency} ms — **Lag Prone** (High risk of packet loss)")
+            except Exception:
+                st.error("❌ Connection timed out or server unreachable.")
 
 st.markdown("---")
-st.subheader("📋 Session Telemetry Explorer")
+
+# --- 10. FEATURE 3: MACHINE LEARNING MATCH PREDICTOR ---
+st.subheader("🤖 ML Match Outcome Predictor")
+st.caption("Predict match win probability based on simulated connection quality.")
+
+ml_col1, ml_col2 = st.columns(2)
+
+with ml_col1:
+    input_ping = st.number_input("Enter Simulated Ping (ms)", min_value=5, max_value=300, value=45)
+    input_dc = st.selectbox("Simulate Disconnect Issue?", ["No Disconnects (0)", "Disconnected (1)"])
+    dc_value = 1 if "Disconnected (1)" in input_dc else 0
+
+with ml_col2:
+    if "ping_ms" in df.columns and "match_outcome" in df.columns:
+        # Prepare binary target: 1 = Win, 0 = Loss/Forfeit
+        model_df = df.copy().dropna(subset=["ping_ms", "disconnected", "match_outcome"])
+        model_df["win"] = model_df["match_outcome"].apply(lambda x: 1 if str(x).strip().lower() == "win" else 0)
+        
+        if len(model_df["win"].unique()) > 1:
+            X = model_df[["ping_ms", "disconnected"]]
+            y = model_df["win"]
+            
+            clf = LogisticRegression()
+            clf.fit(X, y)
+            
+            prob_win = clf.predict_proba([[input_ping, dc_value]])[0][1] * 100
+            
+            st.markdown("#### **Prediction Results:**")
+            st.progress(int(prob_win))
+            
+            if prob_win >= 60:
+                st.success(f"🏆 **Estimated Win Probability:** {prob_win:.1f}% — Optimal connectivity favored.")
+            elif prob_win >= 40:
+                st.warning(f"⚠️ **Estimated Win Probability:** {prob_win:.1f}% — Moderate latency penalty.")
+            else:
+                st.error(f"🚨 **Estimated Win Probability:** {prob_win:.1f}% — High risk of defeat/forfeit due to severe lag.")
+        else:
+            st.info("Insufficient label distribution to train predictor model.")
+
+st.markdown("---")
+
+# --- 11. FEATURE 4: EXPORTABLE CSV REPORTS & TELEMETRY EXPLORER ---
+st.subheader("📋 Session Telemetry Explorer & Audit Report")
+
 if not filtered_df.empty:
-    table_df = filtered_df[["session_id", "player_id", "username", "region", "ping_ms", "disconnected", "match_outcome"]].head(100)
-    html_table = table_df.to_html(classes="esports-table", index=False)
+    cols_to_show = [c for c in ["session_id", "player_id", "username", "region", "ping_ms", "disconnected", "match_outcome"] if c in filtered_df.columns]
+    table_df = filtered_df[cols_to_show].head(100)
     
+    # Export CSV Button
+    csv_data = filtered_df[cols_to_show].to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Download Filtered Telemetry Audit (CSV)",
+        data=csv_data,
+        file_name="telemetry_audit_report.csv",
+        mime="text/csv"
+    )
+    
+    html_table = table_df.to_html(classes="esports-table", index=False)
     st.markdown(f'<div class="esports-table-container">{html_table}</div>', unsafe_allow_html=True)
