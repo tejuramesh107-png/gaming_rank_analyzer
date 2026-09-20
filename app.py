@@ -8,25 +8,30 @@ import time
 import requests
 from sklearn.linear_model import LogisticRegression
 
-# --- 1. PAGE CONFIG & HIGH-CONTRAST ESPORTS CSS ---
+# --- 1. PAGE CONFIG & GAMING AESTHETIC CSS ---
 st.set_page_config(
     page_title="Esports Latency Analyzer",
     layout="wide",
     page_icon="🎮"
 )
 
+# Cyberpunk Animated Grid & Esports Overlay
 st.markdown("""
     <style>
+    /* ANIMATED GAMING BACKGROUND GRID */
     .stApp {
-        background-color: #0b0d19;
+        background-color: #05070f;
         background-image: 
-            radial-gradient(circle at 15% 15%, rgba(124, 58, 237, 0.2) 0%, transparent 40%),
-            radial-gradient(circle at 85% 85%, rgba(0, 242, 254, 0.15) 0%, transparent 40%);
+            linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px),
+            radial-gradient(circle at 50% 20%, rgba(124, 58, 237, 0.25) 0%, transparent 60%);
+        background-size: 40px 40px, 40px 40px, 100% 100%;
         color: #ffffff !important;
     }
     
+    /* SIDEBAR STYLING */
     [data-testid="stSidebar"] {
-        background-color: #060712 !important;
+        background-color: #03040a !important;
         border-right: 1px solid #1e1b4b;
     }
     [data-testid="stSidebar"] *, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span, [data-testid="stSidebar"] p {
@@ -36,26 +41,29 @@ st.markdown("""
     }
     
     [data-testid="stSidebar"] .stButton > button {
-        background: linear-gradient(90deg, #6366f1 0%, #00f2fe 100%) !important;
-        color: #000000 !important;
+        background: linear-gradient(90deg, #7c3aed 0%, #00f2fe 100%) !important;
+        color: #ffffff !important;
         font-weight: 800 !important;
         border: none !important;
         border-radius: 8px !important;
+        box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
     }
 
     div[data-baseweb="select"] > div {
-        background-color: #1a1d36 !important;
+        background-color: #0f1225 !important;
         color: #ffffff !important;
-        border: 1px solid #6366f1 !important;
+        border: 1px solid #00f2fe !important;
         border-radius: 8px !important;
     }
 
+    /* NEON GLASSMORPHISM KPI CARDS */
     div[data-testid="stMetric"] {
-        background: rgba(18, 21, 40, 0.9);
-        border: 1px solid #6366f1;
-        box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+        background: rgba(15, 18, 37, 0.85);
+        border: 1px solid #7c3aed;
+        box-shadow: 0 0 15px rgba(124, 58, 237, 0.3), inset 0 0 15px rgba(0, 242, 254, 0.1);
         border-radius: 12px;
         padding: 15px;
+        backdrop-filter: blur(5px);
     }
     div[data-testid="stMetricLabel"] p {
         color: #a5b4fc !important;
@@ -65,15 +73,17 @@ st.markdown("""
         color: #00f2fe !important;
         font-weight: 900 !important;
         font-size: 2rem !important;
-        text-shadow: 0 0 8px rgba(0, 242, 254, 0.6);
+        text-shadow: 0 0 10px rgba(0, 242, 254, 0.8);
     }
 
+    /* ESPORTS TABLE STYLING */
     .esports-table-container {
-        background-color: #121528;
-        border: 1px solid #312e81;
+        background-color: rgba(15, 18, 37, 0.9);
+        border: 1px solid #7c3aed;
         border-radius: 10px;
         padding: 10px;
         overflow-x: auto;
+        box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
     }
     .esports-table {
         width: 100%;
@@ -83,21 +93,21 @@ st.markdown("""
         font-size: 0.9rem;
     }
     .esports-table th {
-        background-color: #1e1b4b;
+        background-color: #1a103c;
         color: #00f2fe;
         text-align: left;
         padding: 12px;
-        border-bottom: 2px solid #6366f1;
+        border-bottom: 2px solid #00f2fe;
         text-transform: uppercase;
         font-size: 0.8rem;
         letter-spacing: 1px;
     }
     .esports-table td {
         padding: 10px 12px;
-        border-bottom: 1px solid #1e293b;
+        border-bottom: 1px solid #1e1b4b;
     }
     .esports-table tr:hover {
-        background-color: #1e1b4b;
+        background-color: #241454;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -158,8 +168,13 @@ def load_default_data():
     
     return sessions_df
 
-# --- 4. FEATURE 1: FILE UPLOADER ---
-st.sidebar.markdown("## 🕹️ Telemetry Controls")
+# --- 4. SIDEBAR CONTROLS & GIF HEADER ---
+st.sidebar.markdown("""
+    <div style="text-align: center; padding-bottom: 10px;">
+        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZydWJmcGV1cGtkZmh0eXlyZXE5czQ1aXo1ZXB6cnExZDdrOHZzaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPnAiaMCws8nOsE/giphy.gif" width="120" style="border-radius: 10px;">
+        <h2 style="color: #00f2fe; margin-top: 5px;">Control Room</h2>
+    </div>
+""", unsafe_allow_html=True)
 
 if st.sidebar.button("ℹ️ App & Network Guide", use_container_width=True):
     show_guide_modal()
@@ -182,9 +197,19 @@ else:
         st.error(f"Error loading database: {e}")
         st.stop()
 
-# --- 5. HEADER ---
-st.title("⚡ Gaming Rank & Server Latency Analyzer")
-st.caption("🎮 **Domain Benchmark:** Esports Tactical FPS Servers (Valorant / CS2 Telemetry)")
+# --- 5. DASHBOARD HEADER WITH GAMING BANNER ---
+head_col1, head_col2 = st.columns([3, 1])
+
+with head_col1:
+    st.title("⚡ Gaming Rank & Server Latency Analyzer")
+    st.caption("🎮 **Domain Benchmark:** Esports Tactical FPS Servers (Valorant / CS2 Telemetry)")
+
+with head_col2:
+    st.markdown("""
+        <div style="text-align: right;">
+            <img src="https://media.giphy.com/media/LpdlqTkgO2L6g/giphy.gif" width="100" style="border-radius: 10px; border: 1px solid #00f2fe;">
+        </div>
+    """, unsafe_allow_html=True)
 
 st.markdown("""
 ### 🎯 Project Objective
@@ -244,8 +269,8 @@ with col1:
     st.subheader("📶 Server Ping Distribution")
     if not filtered_df.empty and "ping_ms" in filtered_df.columns:
         fig, ax = plt.subplots(figsize=(6, 4))
-        fig.patch.set_facecolor('#0b0d19')
-        ax.set_facecolor('#121528')
+        fig.patch.set_facecolor('#05070f')
+        ax.set_facecolor('#0f1225')
         sns.histplot(data=filtered_df, x="ping_ms", bins=25, kde=True, ax=ax, color="#00f2fe")
         ax.set_xlabel("Ping Latency (ms)", color="#a5b4fc")
         ax.set_ylabel("Active Sessions", color="#a5b4fc")
@@ -259,7 +284,7 @@ with col2:
         outcome_counts = filtered_df["match_outcome"].value_counts()
         if not outcome_counts.empty:
             fig2, ax2 = plt.subplots(figsize=(5, 5))
-            fig2.patch.set_facecolor('#0b0d19')
+            fig2.patch.set_facecolor('#05070f')
             colors = ["#00f2fe", "#ff4757", "#ffa502", "#2ed573"]
             ax2.pie(
                 outcome_counts, 
@@ -278,7 +303,7 @@ with col2:
 
 st.markdown("---")
 
-# --- 9. FEATURE 2: INTERACTIVE PING TEST SIMULATOR ---
+# --- 9. PING TEST SIMULATOR ---
 st.subheader("⚡ Live Regional Ping Test Simulator")
 st.caption("Measure live HTTP round-trip latency to global public endpoints.")
 
@@ -317,7 +342,7 @@ with sim_col2:
 
 st.markdown("---")
 
-# --- 10. FEATURE 3: MACHINE LEARNING MATCH PREDICTOR ---
+# --- 10. ML MATCH PREDICTOR ---
 st.subheader("🤖 ML Match Outcome Predictor")
 st.caption("Predict match win probability based on simulated connection quality.")
 
@@ -330,7 +355,6 @@ with ml_col1:
 
 with ml_col2:
     if "ping_ms" in df.columns and "match_outcome" in df.columns:
-        # Prepare binary target: 1 = Win, 0 = Loss/Forfeit
         model_df = df.copy().dropna(subset=["ping_ms", "disconnected", "match_outcome"])
         model_df["win"] = model_df["match_outcome"].apply(lambda x: 1 if str(x).strip().lower() == "win" else 0)
         
@@ -357,14 +381,13 @@ with ml_col2:
 
 st.markdown("---")
 
-# --- 11. FEATURE 4: EXPORTABLE CSV REPORTS & TELEMETRY EXPLORER ---
+# --- 11. EXPORT & TELEMETRY EXPLORER ---
 st.subheader("📋 Session Telemetry Explorer & Audit Report")
 
 if not filtered_df.empty:
     cols_to_show = [c for c in ["session_id", "player_id", "username", "region", "ping_ms", "disconnected", "match_outcome"] if c in filtered_df.columns]
     table_df = filtered_df[cols_to_show].head(100)
     
-    # Export CSV Button
     csv_data = filtered_df[cols_to_show].to_csv(index=False).encode('utf-8')
     st.download_button(
         label="📥 Download Filtered Telemetry Audit (CSV)",
