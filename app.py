@@ -15,7 +15,7 @@ st.set_page_config(
     page_icon="🎮"
 )
 
-# Cyberpunk Animated Grid & Esports Overlay
+# Cyberpunk Animated Grid & Native Neon Badges
 st.markdown("""
     <style>
     /* ANIMATED GAMING BACKGROUND GRID */
@@ -25,7 +25,7 @@ st.markdown("""
             linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px),
             linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px),
             radial-gradient(circle at 50% 20%, rgba(124, 58, 237, 0.25) 0%, transparent 60%);
-        background-size: 40px 40px, 40px 40px, 100% 100%;
+        background-size: 35px 35px, 35px 35px, 100% 100%;
         color: #ffffff !important;
     }
     
@@ -109,6 +109,26 @@ st.markdown("""
     .esports-table tr:hover {
         background-color: #241454;
     }
+
+    /* NATIVE GLOWING RADAR BADGE */
+    .radar-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(15, 18, 37, 0.9);
+        border: 1px solid #00f2fe;
+        border-radius: 12px;
+        padding: 10px 15px;
+        box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+    }
+    .pulse-dot {
+        width: 12px;
+        height: 12px;
+        background-color: #2ed573;
+        border-radius: 50%;
+        margin-right: 10px;
+        box-shadow: 0 0 10px #2ed573;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -168,11 +188,10 @@ def load_default_data():
     
     return sessions_df
 
-# --- 4. SIDEBAR CONTROLS & GIF HEADER ---
+# --- 4. SIDEBAR CONTROLS ---
 st.sidebar.markdown("""
-    <div style="text-align: center; padding-bottom: 10px;">
-        <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3ZydWJmcGV1cGtkZmh0eXlyZXE5czQ1aXo1ZXB6cnExZDdrOHZzaSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPnAiaMCws8nOsE/giphy.gif" width="120" style="border-radius: 10px;">
-        <h2 style="color: #00f2fe; margin-top: 5px;">Control Room</h2>
+    <div style="text-align: center; padding-bottom: 15px;">
+        <h2 style="color: #00f2fe; margin-top: 5px; font-weight: 900; letter-spacing: 1px;">🎮 CONTROL ROOM</h2>
     </div>
 """, unsafe_allow_html=True)
 
@@ -197,7 +216,7 @@ else:
         st.error(f"Error loading database: {e}")
         st.stop()
 
-# --- 5. DASHBOARD HEADER WITH GAMING BANNER ---
+# --- 5. DASHBOARD HEADER WITH RADAR BADGE ---
 head_col1, head_col2 = st.columns([3, 1])
 
 with head_col1:
@@ -206,8 +225,12 @@ with head_col1:
 
 with head_col2:
     st.markdown("""
-        <div style="text-align: right;">
-            <img src="https://media.giphy.com/media/LpdlqTkgO2L6g/giphy.gif" width="100" style="border-radius: 10px; border: 1px solid #00f2fe;">
+        <div class="radar-container" style="margin-top: 15px;">
+            <div class="pulse-dot"></div>
+            <div>
+                <span style="color: #00f2fe; font-weight: 800; font-size: 0.85rem;">SERVER RADAR</span><br>
+                <span style="color: #2ed573; font-weight: 700; font-size: 0.75rem;">LIVE FEED OK</span>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
