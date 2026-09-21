@@ -18,7 +18,6 @@ st.set_page_config(
 # Deep Obsidian & Neon Emerald Gaming Theme
 st.markdown("""
     <style>
-    /* MAIN APP BACKGROUND: Obsidian Slate with Subtle Radial Glow */
     .stApp {
         background-color: #0b0e14;
         background-image: 
@@ -27,7 +26,6 @@ st.markdown("""
         color: #e2e8f0 !important;
     }
     
-    /* SIDEBAR STYLING: Tactical Command Panel */
     [data-testid="stSidebar"] {
         background-color: #07090e !important;
         border-right: 1px solid #1a2332;
@@ -53,7 +51,6 @@ st.markdown("""
         border-radius: 6px !important;
     }
 
-    /* GLASSMORPHISM KPI CARDS WITH EMERALD ACCENTS */
     div[data-testid="stMetric"] {
         background: rgba(18, 24, 38, 0.75);
         border: 1px solid #1a2332;
@@ -77,7 +74,15 @@ st.markdown("""
         text-shadow: 0 0 12px rgba(0, 255, 163, 0.4);
     }
 
-    /* ESPORTS TABLE STYLING */
+    .insights-card {
+        background-color: rgba(18, 24, 38, 0.85);
+        border: 1px solid #00e5ff;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+    }
+
     .esports-table-container {
         background-color: rgba(18, 24, 38, 0.85);
         border: 1px solid #1a2332;
@@ -110,7 +115,6 @@ st.markdown("""
         background-color: #161e2e;
     }
 
-    /* HEADER SYSTEM BADGE */
     .system-badge {
         display: inline-flex;
         align-items: center;
@@ -135,19 +139,20 @@ st.markdown("""
 @st.dialog("📖 System Documentation & Telemetry Guide")
 def show_guide_modal():
     st.markdown("""
-    ### 🎯 Benchmark Context: Tactical FPS Esports
-    This control room measures connection quality for competitive tactical shooters like **Valorant** and **Counter-Strike 2 (CS2)**.
+    ### 🎯 Benchmark Context: Esports Network Telemetry
+    This control room measures connection quality across multiple competitive game genres.
 
     ---
-    ### ⚡ Network Metrics Explained
-    * **Ping (Latency):** Travel time (in milliseconds) between player and server. Lower is better ($<50\\text{ ms}$).
-    * **Disconnect Rate:** Percentage of total sessions interrupted by network drops.
-    * **High Lag Spikes ($>80\\text{ ms}$):** Ping spikes causing severe hit-registration delay or match forfeits.
+    ### ⚡ Network Metrics & Benchmarks
+    * **Tactical FPS (Valorant / CS2):** High tick rate requirement. Optimal $<30\text{ ms}$; Lag spike threshold $>50\text{ ms}$.
+    * **Battle Royale (Apex / Warzone):** High server load. Optimal $<60\text{ ms}$; Lag spike threshold $>80\text{ ms}$.
+    * **MOBA (LoL / Dota 2):** Input command queueing. Optimal $<50\text{ ms}$; Lag spike threshold $>70\text{ ms}$.
     
     ---
-    ### 💡 Navigation
-    * Use the **Sidebar Filters** or **Upload CSV** to process custom network logs.
-    * Execute real-time network tests via the **Live Ping Tester** or **ML Match Outcome Predictor**.
+    ### 💡 Features
+    * **Multi-Game Presets:** Automatically adjust lag thresholds in the sidebar.
+    * **Correlation Heatmap:** Bivariate relationship between Ping, Disconnects, and Win Outcomes.
+    * **ML Outcome Predictor:** Logistic Regression model calculating real-time win probability.
     """)
     if st.button("Close Guide", type="primary"):
         st.rerun()
@@ -198,6 +203,22 @@ if st.sidebar.button("ℹ️ App & Network Guide", use_container_width=True):
     show_guide_modal()
 
 st.sidebar.markdown("---")
+
+# ADDITION 1: MULTI-GAME GENRE PRESETS
+st.sidebar.markdown("### 🎯 Game Genre Preset")
+game_genre = st.sidebar.selectbox(
+    "Select Game Genre",
+    ["Tactical FPS (Valorant / CS2)", "Battle Royale (Apex / Warzone)", "MOBA (LoL / Dota 2)"]
+)
+
+genre_thresholds = {
+    "Tactical FPS (Valorant / CS2)": {"target_ping": 30, "spike_threshold": 50},
+    "Battle Royale (Apex / Warzone)": {"target_ping": 60, "spike_threshold": 80},
+    "MOBA (LoL / Dota 2)": {"target_ping": 50, "spike_threshold": 70}
+}
+current_threshold = genre_thresholds[game_genre]
+
+st.sidebar.markdown("---")
 st.sidebar.markdown("### 📁 Data Source")
 uploaded_file = st.sidebar.file_uploader("Upload Telemetry CSV", type=["csv"])
 
@@ -220,13 +241,13 @@ head_col1, head_col2 = st.columns([3, 1])
 
 with head_col1:
     st.title("⚡ Gaming Rank & Server Latency Analyzer")
-    st.caption("🎮 **Domain Benchmark:** Esports Tactical FPS Servers (Valorant / CS2 Telemetry)")
+    st.caption(f"🎮 **Active Benchmark:** {game_genre} | Spike Threshold: >{current_threshold['spike_threshold']}ms")
 
 with head_col2:
     st.markdown("""
         <div style="text-align: right; margin-top: 15px;">
             <div class="system-badge">
-                <div class="pulse-dot"></div>
+                <div class="status-dot"></div>
                 <div>
                     <span style="color: #00ffa3; font-weight: 800; font-size: 0.8rem; letter-spacing: 1px;">SYSTEM ONLINE</span><br>
                     <span style="color: #94a3b8; font-weight: 600; font-size: 0.7rem;">TELEMETRY ACTIVE</span>
@@ -250,10 +271,7 @@ region_option = st.sidebar.selectbox(
     help="Filter data by server cluster."
 )
 
-if region_option == "All Regions":
-    selected_regions = all_regions
-else:
-    selected_regions = [region_option]
+selected_regions = all_regions if region_option == "All Regions" else [region_option]
 
 min_ping, max_ping = int(df["ping_ms"].min()), int(df["ping_ms"].max()) if "ping_ms" in df.columns else (0, 100)
 ping_range = st.sidebar.slider(
@@ -276,28 +294,52 @@ kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 total_sessions = len(filtered_df)
 avg_ping = round(filtered_df["ping_ms"].mean(), 1) if total_sessions > 0 and "ping_ms" in filtered_df.columns else 0
 dc_rate = round((filtered_df["disconnected"].sum() / total_sessions * 100), 1) if total_sessions > 0 and "disconnected" in filtered_df.columns else 0
-# Updated threshold to >80ms to match the dataset limits accurately
-high_lag_spikes = len(filtered_df[filtered_df["ping_ms"] > 80]) if "ping_ms" in filtered_df.columns else 0
+
+# Dynamic lag spike count based on genre preset
+spike_limit = current_threshold['spike_threshold']
+high_lag_spikes = len(filtered_df[filtered_df["ping_ms"] > spike_limit]) if "ping_ms" in filtered_df.columns else 0
 
 kpi1.metric("Average Ping", f"{avg_ping} ms")
 kpi2.metric("Active Sessions", f"{total_sessions:,}")
 kpi3.metric("Disconnect Rate", f"{dc_rate}%")
-kpi4.metric("Lag Spikes (>80ms)", f"{high_lag_spikes}")
+kpi4.metric(f"Lag Spikes (>{spike_limit}ms)", f"{high_lag_spikes}")
 
 st.markdown("---")
 
-# --- 8. CHARTS ---
-col1, col2 = st.columns(2)
+# ADDITION 2: AUTOMATED DATA SCIENCE INSIGHTS CARD
+st.subheader("💡 Key Telemetry Insights")
+if not filtered_df.empty and "ping_ms" in filtered_df.columns and "match_outcome" in filtered_df.columns:
+    win_sessions = filtered_df[filtered_df["match_outcome"].str.strip().str.lower() == "win"]
+    loss_sessions = filtered_df[filtered_df["match_outcome"].str.strip().str.lower() == "loss"]
+    
+    avg_win_ping = round(win_sessions["ping_ms"].mean(), 1) if not win_sessions.empty else 0
+    avg_loss_ping = round(loss_sessions["ping_ms"].mean(), 1) if not loss_sessions.empty else 0
+    
+    st.markdown(f"""
+    <div class="insights-card">
+        <span style="color: #00e5ff; font-weight: 800;">📊 ANALYTICS SUMMARY:</span>
+        <ul style="margin-top: 8px; margin-bottom: 0px; color: #cbd5e1;">
+            <li>Matches resulting in a <b>WIN</b> maintained an average latency of <b>{avg_win_ping} ms</b>.</li>
+            <li>Matches resulting in a <b>LOSS</b> experienced an average latency of <b>{avg_loss_ping} ms</b>.</li>
+            <li>In <b>{game_genre}</b> mode, <b>{high_lag_spikes} session(s)</b> exceeded the critical <b>{spike_limit} ms</b> threshold.</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("---")
+
+# --- 8. CHARTS & ADDITION 3: CORRELATION HEATMAP ---
+col1, col2, col3 = st.columns(3)
 plt.style.use("dark_background")
 
 with col1:
-    st.subheader("📶 Server Ping Distribution")
+    st.subheader("📶 Ping Distribution")
     if not filtered_df.empty and "ping_ms" in filtered_df.columns:
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(5, 4))
         fig.patch.set_facecolor('#0b0e14')
         ax.set_facecolor('#121826')
         
-        sns.histplot(data=filtered_df, x="ping_ms", bins=25, kde=True, ax=ax, color="#00ffa3")
+        sns.histplot(data=filtered_df, x="ping_ms", bins=20, kde=True, ax=ax, color="#00ffa3")
         ax.set_xlabel("Ping Latency (ms)", color="#94a3b8")
         ax.set_ylabel("Active Sessions", color="#94a3b8")
         ax.spines['top'].set_visible(False)
@@ -310,11 +352,11 @@ with col1:
         st.warning("⚠️ No matching records found.")
 
 with col2:
-    st.subheader("🏆 Match Outcome Breakdown")
+    st.subheader("🏆 Outcome Breakdown")
     if not filtered_df.empty and "match_outcome" in filtered_df.columns:
         outcome_counts = filtered_df["match_outcome"].value_counts()
         if not outcome_counts.empty:
-            fig2, ax2 = plt.subplots(figsize=(5, 5))
+            fig2, ax2 = plt.subplots(figsize=(4.5, 4.5))
             fig2.patch.set_facecolor('#0b0e14')
             colors = ["#00ffa3", "#ff4757", "#ffa502", "#00e5ff"]
             ax2.pie(
@@ -329,8 +371,23 @@ with col2:
             st.pyplot(fig2)
         else:
             st.warning("⚠️ No outcome data available.")
-    else:
-        st.warning("⚠️ No outcome data available.")
+
+with col3:
+    st.subheader("🔥 Correlation Heatmap")
+    if not filtered_df.empty and "ping_ms" in filtered_df.columns and "match_outcome" in filtered_df.columns:
+        corr_df = filtered_df.copy()
+        corr_df["win_binary"] = corr_df["match_outcome"].apply(lambda x: 1 if str(x).strip().lower() == "win" else 0)
+        
+        corr_matrix = corr_df[["ping_ms", "disconnected", "win_binary"]].corr()
+        
+        fig3, ax3 = plt.subplots(figsize=(5, 4))
+        fig3.patch.set_facecolor('#0b0e14')
+        ax3.set_facecolor('#121826')
+        
+        sns.heatmap(corr_matrix, annot=True, fmt=".2f", cmap="vlag", ax=ax3, cbar=False,
+                    xticklabels=["Ping", "Disconnect", "Win"], yticklabels=["Ping", "Disconnect", "Win"])
+        ax3.tick_params(colors='#94a3b8')
+        st.pyplot(fig3)
 
 st.markdown("---")
 
@@ -362,12 +419,12 @@ with sim_col2:
                 response = requests.get(target_url, timeout=3)
                 latency = round((time.time() - start_time) * 1000, 1)
                 
-                if latency < 50:
-                    st.success(f"🟢 **{target_region} Ping:** {latency} ms — **Tournament Ready** (Optimal connection)")
-                elif latency <= 100:
+                if latency < current_threshold["target_ping"]:
+                    st.success(f"🟢 **{target_region} Ping:** {latency} ms — **Optimal** for {game_genre}")
+                elif latency <= current_threshold["spike_threshold"]:
                     st.warning(f"🟡 **{target_region} Ping:** {latency} ms — **Playable** (Minor latency detected)")
                 else:
-                    st.error(f"🔴 **{target_region} Ping:** {latency} ms — **Lag Prone** (High risk of packet loss)")
+                    st.error(f"🔴 **{target_region} Ping:** {latency} ms — **Lag Prone** (Exceeds {spike_limit}ms limit)")
             except Exception:
                 st.error("❌ Connection timed out or server unreachable.")
 
@@ -402,11 +459,11 @@ with ml_col2:
             st.progress(int(prob_win))
             
             if prob_win >= 60:
-                st.success(f"🏆 **Estimated Win Probability:** {prob_win:.1f}% — Optimal connectivity favored.")
+                st.success(f"🏆 **Estimated Win Probability:** {prob_win:.1f}% — Connectivity favored.")
             elif prob_win >= 40:
                 st.warning(f"⚠️ **Estimated Win Probability:** {prob_win:.1f}% — Moderate latency penalty.")
             else:
-                st.error(f"🚨 **Estimated Win Probability:** {prob_win:.1f}% — High risk of defeat/forfeit due to severe lag.")
+                st.error(f"🚨 **Estimated Win Probability:** {prob_win:.1f}% — High risk of defeat due to lag.")
         else:
             st.info("Insufficient label distribution to train predictor model.")
 
