@@ -15,125 +15,124 @@ st.set_page_config(
     page_icon="🎮"
 )
 
-# Cyberpunk Animated Grid & Native Neon Badges
+# Deep Obsidian & Neon Emerald Gaming Theme
 st.markdown("""
     <style>
-    /* ANIMATED GAMING BACKGROUND GRID */
+    /* MAIN APP BACKGROUND: Obsidian Slate with Subtle Radial Glow */
     .stApp {
-        background-color: #05070f;
+        background-color: #0b0e14;
         background-image: 
-            linear-gradient(rgba(0, 242, 254, 0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 242, 254, 0.05) 1px, transparent 1px),
-            radial-gradient(circle at 50% 20%, rgba(124, 58, 237, 0.25) 0%, transparent 60%);
-        background-size: 35px 35px, 35px 35px, 100% 100%;
-        color: #ffffff !important;
+            radial-gradient(circle at 50% 0%, rgba(0, 255, 163, 0.12) 0%, transparent 50%),
+            radial-gradient(circle at 85% 30%, rgba(0, 229, 255, 0.08) 0%, transparent 40%);
+        color: #e2e8f0 !important;
     }
     
-    /* SIDEBAR STYLING */
+    /* SIDEBAR STYLING: Tactical Command Panel */
     [data-testid="stSidebar"] {
-        background-color: #03040a !important;
-        border-right: 1px solid #1e1b4b;
+        background-color: #07090e !important;
+        border-right: 1px solid #1a2332;
     }
     [data-testid="stSidebar"] *, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span, [data-testid="stSidebar"] p {
-        color: #ffffff !important;
+        color: #f1f5f9 !important;
         font-weight: 600 !important;
-        opacity: 1 !important;
     }
     
     [data-testid="stSidebar"] .stButton > button {
-        background: linear-gradient(90deg, #7c3aed 0%, #00f2fe 100%) !important;
-        color: #ffffff !important;
+        background: linear-gradient(135deg, #00ffa3 0%, #00e5ff 100%) !important;
+        color: #07090e !important;
         font-weight: 800 !important;
         border: none !important;
-        border-radius: 8px !important;
-        box-shadow: 0 0 10px rgba(0, 242, 254, 0.4);
+        border-radius: 6px !important;
+        box-shadow: 0 0 12px rgba(0, 255, 163, 0.3);
     }
 
     div[data-baseweb="select"] > div {
-        background-color: #0f1225 !important;
+        background-color: #121826 !important;
         color: #ffffff !important;
-        border: 1px solid #00f2fe !important;
-        border-radius: 8px !important;
+        border: 1px solid #00ffa3 !important;
+        border-radius: 6px !important;
     }
 
-    /* NEON GLASSMORPHISM KPI CARDS */
+    /* GLASSMORPHISM KPI CARDS WITH EMERALD ACCENTS */
     div[data-testid="stMetric"] {
-        background: rgba(15, 18, 37, 0.85);
-        border: 1px solid #7c3aed;
-        box-shadow: 0 0 15px rgba(124, 58, 237, 0.3), inset 0 0 15px rgba(0, 242, 254, 0.1);
-        border-radius: 12px;
-        padding: 15px;
-        backdrop-filter: blur(5px);
+        background: rgba(18, 24, 38, 0.75);
+        border: 1px solid #1a2332;
+        border-left: 4px solid #00ffa3;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        border-radius: 8px;
+        padding: 16px;
+        backdrop-filter: blur(8px);
     }
     div[data-testid="stMetricLabel"] p {
-        color: #a5b4fc !important;
+        color: #94a3b8 !important;
         font-weight: 700 !important;
+        text-transform: uppercase;
+        font-size: 0.75rem !important;
+        letter-spacing: 0.5px;
     }
     div[data-testid="stMetricValue"] div {
-        color: #00f2fe !important;
+        color: #00ffa3 !important;
         font-weight: 900 !important;
-        font-size: 2rem !important;
-        text-shadow: 0 0 10px rgba(0, 242, 254, 0.8);
+        font-size: 2.1rem !important;
+        text-shadow: 0 0 12px rgba(0, 255, 163, 0.4);
     }
 
     /* ESPORTS TABLE STYLING */
     .esports-table-container {
-        background-color: rgba(15, 18, 37, 0.9);
-        border: 1px solid #7c3aed;
-        border-radius: 10px;
+        background-color: rgba(18, 24, 38, 0.85);
+        border: 1px solid #1a2332;
+        border-radius: 8px;
         padding: 10px;
         overflow-x: auto;
-        box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
     }
     .esports-table {
         width: 100%;
         border-collapse: collapse;
-        color: #e2e8f0;
+        color: #cbd5e1;
         font-family: sans-serif;
         font-size: 0.9rem;
     }
     .esports-table th {
-        background-color: #1a103c;
-        color: #00f2fe;
+        background-color: #0f1420;
+        color: #00ffa3;
         text-align: left;
         padding: 12px;
-        border-bottom: 2px solid #00f2fe;
+        border-bottom: 2px solid #00ffa3;
         text-transform: uppercase;
         font-size: 0.8rem;
         letter-spacing: 1px;
     }
     .esports-table td {
         padding: 10px 12px;
-        border-bottom: 1px solid #1e1b4b;
+        border-bottom: 1px solid #1a2332;
     }
     .esports-table tr:hover {
-        background-color: #241454;
+        background-color: #161e2e;
     }
 
-    /* NATIVE GLOWING RADAR BADGE */
-    .radar-container {
-        display: flex;
+    /* HEADER SYSTEM BADGE */
+    .system-badge {
+        display: inline-flex;
         align-items: center;
-        justify-content: center;
-        background: rgba(15, 18, 37, 0.9);
-        border: 1px solid #00f2fe;
-        border-radius: 12px;
-        padding: 10px 15px;
-        box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
+        background: rgba(18, 24, 38, 0.9);
+        border: 1px solid #00ffa3;
+        border-radius: 8px;
+        padding: 8px 16px;
+        box-shadow: 0 0 15px rgba(0, 255, 163, 0.2);
     }
-    .pulse-dot {
-        width: 12px;
-        height: 12px;
-        background-color: #2ed573;
+    .status-dot {
+        width: 10px;
+        height: 10px;
+        background-color: #00ffa3;
         border-radius: 50%;
         margin-right: 10px;
-        box-shadow: 0 0 10px #2ed573;
+        box-shadow: 0 0 8px #00ffa3;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # --- 2. POP-UP GUIDE MODAL ---
-@st.dialog("📖 App Guide & Network Terminology")
+@st.dialog("📖 System Documentation & Telemetry Guide")
 def show_guide_modal():
     st.markdown("""
     ### 🎯 Benchmark Context: Tactical FPS Esports
@@ -143,12 +142,12 @@ def show_guide_modal():
     ### ⚡ Network Metrics Explained
     * **Ping (Latency):** Travel time (in milliseconds) between player and server. Lower is better ($<50\\text{ ms}$).
     * **Disconnect Rate:** Percentage of total sessions interrupted by network drops.
-    * **High Lag Spikes ($>150\\text{ ms}$):** Severe delay causing rubberbanding and match forfeits.
+    * **High Lag Spikes ($>80\\text{ ms}$):** Ping spikes causing severe hit-registration delay or match forfeits.
     
     ---
-    ### 💡 How to Use
-    * Use the **Sidebar Filters** or **Upload CSV** to load custom network data.
-    * Use the **Live Ping Tester** or **Match Predictor** to simulate network health.
+    ### 💡 Navigation
+    * Use the **Sidebar Filters** or **Upload CSV** to process custom network logs.
+    * Execute real-time network tests via the **Live Ping Tester** or **ML Match Outcome Predictor**.
     """)
     if st.button("Close Guide", type="primary"):
         st.rerun()
@@ -190,8 +189,8 @@ def load_default_data():
 
 # --- 4. SIDEBAR CONTROLS ---
 st.sidebar.markdown("""
-    <div style="text-align: center; padding-bottom: 15px;">
-        <h2 style="color: #00f2fe; margin-top: 5px; font-weight: 900; letter-spacing: 1px;">🎮 CONTROL ROOM</h2>
+    <div style="padding-bottom: 10px;">
+        <h3 style="color: #00ffa3; margin-top: 5px; font-weight: 900; letter-spacing: 1px;">🎮 CONTROL PANEL</h3>
     </div>
 """, unsafe_allow_html=True)
 
@@ -216,7 +215,7 @@ else:
         st.error(f"Error loading database: {e}")
         st.stop()
 
-# --- 5. DASHBOARD HEADER WITH RADAR BADGE ---
+# --- 5. DASHBOARD HEADER ---
 head_col1, head_col2 = st.columns([3, 1])
 
 with head_col1:
@@ -225,11 +224,13 @@ with head_col1:
 
 with head_col2:
     st.markdown("""
-        <div class="radar-container" style="margin-top: 15px;">
-            <div class="pulse-dot"></div>
-            <div>
-                <span style="color: #00f2fe; font-weight: 800; font-size: 0.85rem;">SERVER RADAR</span><br>
-                <span style="color: #2ed573; font-weight: 700; font-size: 0.75rem;">LIVE FEED OK</span>
+        <div style="text-align: right; margin-top: 15px;">
+            <div class="system-badge">
+                <div class="pulse-dot"></div>
+                <div>
+                    <span style="color: #00ffa3; font-weight: 800; font-size: 0.8rem; letter-spacing: 1px;">SYSTEM ONLINE</span><br>
+                    <span style="color: #94a3b8; font-weight: 600; font-size: 0.7rem;">TELEMETRY ACTIVE</span>
+                </div>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -275,12 +276,13 @@ kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 total_sessions = len(filtered_df)
 avg_ping = round(filtered_df["ping_ms"].mean(), 1) if total_sessions > 0 and "ping_ms" in filtered_df.columns else 0
 dc_rate = round((filtered_df["disconnected"].sum() / total_sessions * 100), 1) if total_sessions > 0 and "disconnected" in filtered_df.columns else 0
-high_lag_spikes = len(filtered_df[filtered_df["ping_ms"] > 150]) if "ping_ms" in filtered_df.columns else 0
+# Updated threshold to >80ms to match the dataset limits accurately
+high_lag_spikes = len(filtered_df[filtered_df["ping_ms"] > 80]) if "ping_ms" in filtered_df.columns else 0
 
 kpi1.metric("Average Ping", f"{avg_ping} ms")
-kpi2.metric("Total Active Sessions", f"{total_sessions:,}")
+kpi2.metric("Active Sessions", f"{total_sessions:,}")
 kpi3.metric("Disconnect Rate", f"{dc_rate}%")
-kpi4.metric("Lag Spikes (>150ms)", f"{high_lag_spikes}")
+kpi4.metric("Lag Spikes (>80ms)", f"{high_lag_spikes}")
 
 st.markdown("---")
 
@@ -292,11 +294,17 @@ with col1:
     st.subheader("📶 Server Ping Distribution")
     if not filtered_df.empty and "ping_ms" in filtered_df.columns:
         fig, ax = plt.subplots(figsize=(6, 4))
-        fig.patch.set_facecolor('#05070f')
-        ax.set_facecolor('#0f1225')
-        sns.histplot(data=filtered_df, x="ping_ms", bins=25, kde=True, ax=ax, color="#00f2fe")
-        ax.set_xlabel("Ping Latency (ms)", color="#a5b4fc")
-        ax.set_ylabel("Active Sessions", color="#a5b4fc")
+        fig.patch.set_facecolor('#0b0e14')
+        ax.set_facecolor('#121826')
+        
+        sns.histplot(data=filtered_df, x="ping_ms", bins=25, kde=True, ax=ax, color="#00ffa3")
+        ax.set_xlabel("Ping Latency (ms)", color="#94a3b8")
+        ax.set_ylabel("Active Sessions", color="#94a3b8")
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['left'].set_color('#1a2332')
+        ax.spines['bottom'].set_color('#1a2332')
+        
         st.pyplot(fig)
     else:
         st.warning("⚠️ No matching records found.")
@@ -307,8 +315,8 @@ with col2:
         outcome_counts = filtered_df["match_outcome"].value_counts()
         if not outcome_counts.empty:
             fig2, ax2 = plt.subplots(figsize=(5, 5))
-            fig2.patch.set_facecolor('#05070f')
-            colors = ["#00f2fe", "#ff4757", "#ffa502", "#2ed573"]
+            fig2.patch.set_facecolor('#0b0e14')
+            colors = ["#00ffa3", "#ff4757", "#ffa502", "#00e5ff"]
             ax2.pie(
                 outcome_counts, 
                 labels=outcome_counts.index, 
