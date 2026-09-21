@@ -429,7 +429,7 @@ with sim_col2:
                 st.error("❌ Connection timed out or server unreachable.")
 
 st.markdown("---")
-# --- 10. ML MATCH PREDICTOR ---
+# --- 10. REFINED ML MATCH PREDICTOR ---
 st.subheader("🤖 ML Match Outcome Predictor")
 st.caption("Predict match win probability based on simulated connection quality.")
 
@@ -437,7 +437,18 @@ ml_col1, ml_col2 = st.columns(2)
 
 with ml_col1:
     input_ping = st.number_input("Enter Simulated Ping (ms)", min_value=5, max_value=300, value=45)
-    input_dc = st.selectbox("Simulate Disconnect Issue?", ["No Disconnects (0)", "Disconnected (1)"])
+    
+    # Force disconnect logic if ping exceeds critical threshold (>150ms)
+    default_dc = "Disconnected (1)" if input_ping > 150 else "No Disconnects (0)"
+    
+    # Adding key=f"dc_select_{input_ping}" forces Streamlit to re-render when ping changes
+    input_dc = st.selectbox(
+        "Simulate Disconnect Issue?", 
+        ["No Disconnects (0)", "Disconnected (1)"],
+        index=1 if default_dc == "Disconnected (1)" else 0,
+        key=f"dc_select_{input_ping}",
+        help="Automatically toggles to Disconnected if Ping > 150ms."
+    )
     dc_value = 1 if "Disconnected (1)" in input_dc else 0
 
 with ml_col2:
@@ -458,13 +469,11 @@ with ml_col2:
             st.progress(int(prob_win))
             
             if prob_win >= 60:
-                st.success(f"🏆 **Estimated Win Probability:** {prob_win:.1f}% — Connectivity favored.")
+                st.success(f"🏆 **Estimated Win Probability:** {prob_win:.1f}% — Optimal connectivity favored.")
             elif prob_win >= 40:
                 st.warning(f"⚠️ **Estimated Win Probability:** {prob_win:.1f}% — Moderate latency penalty.")
             else:
-                st.error(f"🚨 **Estimated Win Probability:** {prob_win:.1f}% — High risk of defeat due to lag.")
-        else:
-            st.info("Insufficient label distribution to train predictor model.")
+                st.error(f"🚨 **Estimated Win Probability:** {prob_win:.1f}% — High risk of defeat due to network latency & dropouts.")
 
 # --- 11. EXPORT & TELEMETRY EXPLORER ---
 st.subheader("📋 Session Telemetry Explorer & Audit Report")
