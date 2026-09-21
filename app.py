@@ -429,7 +429,6 @@ with sim_col2:
                 st.error("❌ Connection timed out or server unreachable.")
 
 st.markdown("---")
-
 # --- 10. ML MATCH PREDICTOR ---
 st.subheader("🤖 ML Match Outcome Predictor")
 st.caption("Predict match win probability based on simulated connection quality.")
@@ -466,8 +465,6 @@ with ml_col2:
                 st.error(f"🚨 **Estimated Win Probability:** {prob_win:.1f}% — High risk of defeat due to lag.")
         else:
             st.info("Insufficient label distribution to train predictor model.")
-
-st.markdown("---")
 
 # --- 11. EXPORT & TELEMETRY EXPLORER ---
 st.subheader("📋 Session Telemetry Explorer & Audit Report")
